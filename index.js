@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 
@@ -50,6 +50,7 @@ async function run() {
     app.get("/tasks/:id", async (req, res) => {
       try {
         const id = req.params.id;
+        console.log(id);
         const query = { _id: new ObjectId(id) };
         const result = await taskCollection.findOne(query);
         res.send(result);
@@ -68,7 +69,45 @@ async function run() {
       }
     });
 
-   
+    app.delete("/tasks/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = {
+          _id: new ObjectId(id),
+        };
+        const result = await taskCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    app.put("/tasks/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const data = req.body;
+        console.log(data);
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateTask = {
+          $set: {
+            taskTitle: data.taskTitle,
+            date: data.date,
+            time: data.time,
+            priority: data.priority,
+            taskDescription: data.taskDescription,
+          },
+        };
+        const result = await taskCollection.updateOne(
+          filter,
+          updateTask,
+          options
+        );
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
 
     // Connect the client to the server	(optional starting in v4.7)
 
